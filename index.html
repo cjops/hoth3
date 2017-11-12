@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Title of the document</title>
+<script>
+console.log("Hello world");
+
+</script>
+</head>
+
+<body>
+	<script>
+      function initMap() {
+      	var targetDistance = 3.0;
+        var origin = '330 De Neve Dr, Los Angeles, CA';
+        var destinationA = '10861 Weyburn Ave, Los Angeles, CA';
+        //var destinationB = {lat: 50.087, lng: 14.421};
+        var destinationB = '225 Charles E Young Dr E, Los Angeles, CA';
+        var destinationC = '1200 Getty Center Dr, Los Angeles, CA';
+
+        var targetDistanceInMeters = targetDistance * 1609.344;
+        console.log(targetDistanceInMeters);
+
+        var service = new google.maps.DistanceMatrixService;
+        service.getDistanceMatrix({
+          origins: [origin],
+          destinations: [destinationA, destinationB, destinationC],
+          travelMode: 'WALKING',
+          unitSystem: google.maps.UnitSystem.IMPERIAL
+        }, function(response, status) {
+          if (status !== 'OK') {
+            alert('Error was: ' + status);
+          } else {
+          	var i;
+          	var diff;
+          	console.log(response.rows[0].elements.length);
+          	var minDiff = Math.abs(targetDistanceInMeters - response.rows[0].elements[0].distance.value);
+          	var closestMatch = 0;
+          	for (i = 0; i < response.rows[0].elements.length; i++) {
+          		diff = Math.abs(targetDistanceInMeters - response.rows[0].elements[i].distance.value);
+          		if (diff < minDiff) {
+          			minDiff = diff;
+          			closestMatch = i;
+          		}
+          	}
+          	console.log(closestMatch);
+            console.log(response);
+          }
+        });
+      }
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyByoS05nipwhqvtVKwNP1pl10dMyEpQPV0&callback=initMap">
+    </script>
+</body>
+
+</html>

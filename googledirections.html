@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Directions service (complex)</title>
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #floating-panel {
+        position: absolute;
+        top: 10px;
+        left: 25%;
+        z-index: 5;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+        text-align: center;
+        font-family: 'Roboto','sans-serif';
+        line-height: 30px;
+        padding-left: 10px;
+      }
+      #warnings-panel {
+        width: 100%;
+        height:10%;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+   <iframe src="https://www.google.com/maps/embed?pb=!1m28!1m12!1m3!1d6323.810004658394!2d-118.44866108232428!3d34.06981728187715!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m13!3e6!4m5!1s0x80c2bc85f05c0f65%3A0x25a993585c134837!2sUniversity+of+California%2C+Los+Angeles%2C+Los+Angeles%2C+CA+90095!3m2!1d34.068920999999996!2d-118.4451811!4m5!1s0x80c2bc88cb71d7a7%3A0xb3845f8b4659c9d6!2sJames+West+Alumni+Center%2C+325+Westwood+Plaza%2C+Los+Angeles%2C+CA+90095!3m2!1d34.0702103!2d-118.44528849999999!5e0!3m2!1sen!2sus!4v1510533365867" width="600" height="450" frameborder="0" style="border:0" allowfullscreen></iframe>
+    </div>
+      <div class="container">
+    <div class="row header">
+      <h1><src="https://www.google.com/maps/place/University+of+California,+Los+Angeles/@34.0707529,-118.4508261,15.24z/data=!4m5!3m4!1s0x80c2bc85f05c0f65:0x25a993585c134837!8m2!3d34.068921!4d-118.4451811">
+    </div>
+    <div id="floating-panel">
+    <b>Start: </b>
+    <select id="start">
+      <option value="penn station, new york, ny">location</option>
+      <option value="grand central station, new york, ny">Street view</option>
+    </select>
+    <b>End: </b>
+    <select id="end">
+      <option value="260 Broadway New York NY 10007">miles</option>
+      <option value="W 49th St & 5th Ave, New York, NY 10020">kilometers</option>
+    </select>
+    </div>
+    <div id="map"></div>
+    &nbsp;
+    <div id="warnings-panel"></div>
+    <script>
+      function initMap() {
+        var markerArray = [];
+
+        // Instantiate a directions service.
+        var directionsService = new google.maps.DirectionsService;
+
+        // Create a map and center it on Manhattan.
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 13,
+          center: {lat: 40.771, lng: -73.974}
+        });
+
+        // Create a renderer for directions and bind it to the map.
+        var directionsDisplay = new google.maps.DirectionsRenderer({map: map});
+
+        // Instantiate an info window to hold step text.
+        var stepDisplay = new google.maps.InfoWindow;
+
+        // Display the route between the initial start and end selections.
+        calculateAndDisplayRoute(
+            directionsDisplay, directionsService, markerArray, stepDisplay, map);
+        // Listen to change events from the start and end lists.
+        var onChangeHandler = function() {
+          calculateAndDisplayRoute(
+              directionsDisplay, directionsService, markerArray, stepDisplay, map);
+        };
+        document.getElementById('start').addEventListener('change', onChangeHandler);
+        document.getElementById('end').addEventListener('change', onChangeHandler);
+      }
+
+      function calculateAndDisplayRoute(directionsDisplay, directionsService,
+          markerArray, stepDisplay, map) {
+        // First, remove any existing markers from the map.
+        for (var i = 0; i < markerArray.length; i++) {
+          markerArray[i].setMap(null);
+        }
+
+        // Retrieve the start and end locations and create a DirectionsRequest using
+        // WALKING directions.
+        directionsService.route({
+          origin: document.getElementById('start').value,
+          destination: document.getElementById('end').value,
+          travelMode: 'WALKING'
+        }, function(response, status) {
+          // Route the directions and pass the response to a function to create
+          // markers for each step.
+          if (status === 'OK') {
+            document.getElementById('warnings-panel').innerHTML =
+                '<b>' + response.routes[0].warnings + '</b>';
+            directionsDisplay.setDirections(response);
+            showSteps(response, markerArray, stepDisplay, map);
+          } else {
+            window.alert('Directions request failed due to ' + status);
+          }
+        });
+      }
+
+      function showSteps(directionResult, markerArray, stepDisplay, map) {
+        // For each step, place a marker, and add the text to the marker's infowindow.
+        // Also attach the marker to an array so we can keep track of it and remove it
+        // when calculating new routes.
+        var myRoute = directionResult.routes[0].legs[0];
+        for (var i = 0; i < myRoute.steps.length; i++) {
+          var marker = markerArray[i] = markerArray[i] || new google.maps.Marker;
+          marker.setMap(map);
+          marker.setPosition(myRoute.steps[i].start_location);
+          attachInstructionText(
+              stepDisplay, marker, myRoute.steps[i].instructions, map);
+        }
+      }
+
+      function attachInstructionText(stepDisplay, marker, text, map) {
+        google.maps.event.addListener(marker, 'click', function() {
+          // Open an info window when the marker is clicked on, containing the text
+          // of the step.
+          stepDisplay.setContent(text);
+          stepDisplay.open(map, marker);
+        });
+      }
+    </script>
+  </body>
+</html>
+      

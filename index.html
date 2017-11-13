@@ -11,7 +11,7 @@ console.log("Hello world");
 
 <body>
 	<script>
-      function bestCoords(targetDistance, originCoords, testCoords, fn) {
+      function bestCoords(targetDistance, origin, testCoords, fn) {
 
         //var destinationB = {lat: 50.087, lng: 14.421};
 
@@ -21,7 +21,7 @@ console.log("Hello world");
 
         var service = new google.maps.DistanceMatrixService;
         service.getDistanceMatrix({
-          origins: [originCoords],
+          origins: [origin],
           destinations: testCoords,
           travelMode: 'WALKING',
           unitSystem: google.maps.UnitSystem.IMPERIAL
@@ -44,23 +44,42 @@ console.log("Hello world");
 	          		}
 	          	}
           	}
+          	console.log(closestMatch);
             console.log(response);
             fn(response.destinationAddresses[closestMatch]);
           }
         }
       }
 
+      function generateTestCoords(origin, targetDistance)
+      {
+			var J = 25;
+			var heading = 0;
+			var testCoords = [];
+			var k;
+			for (k = 0; k < J; k++) {
+				testCoords[k] = google.maps.geometry.spherical.computeOffset(origin, targetDistance * 1609.344 / 2.0, heading);
+				heading += (360 / J);
+			}
+			return testCoords;
+      }
+
 		function initMap() {
 			var targetDistance = 4.0; // 4 miles roundtrip
-			var originCoords = {lat: 34.074111, lng: -118.450001};
-			var testCoords = ['10861 Weyburn Ave, Los Angeles, CA', '225 Charles E Young Dr E, Los Angeles, CA', '1200 Getty Center Dr, Los Angeles, CA'];
-			bestCoords(targetDistance, originCoords, testCoords, function(addie) {
+			//var origin = {lat: 34.074111, lng: -118.450001};
+			var origin = new google.maps.LatLng(34.056001, -118.233443);
+			console.log(origin);
+			//var testCoords = ['10861 Weyburn Ave, Los Angeles, CA', '225 Charles E Young Dr E, Los Angeles, CA', '1200 Getty Center Dr, Los Angeles, CA'];
+			var testCoords = generateTestCoords(origin, targetDistance);
+			bestCoords(targetDistance, origin, testCoords, function(addie) {
 				console.log(addie);
 			});
+			//var offset = google.maps.geometry.spherical.computeOffset(origin, 2000, 0);
+			//console.log(offset);
 		}
     </script>
     <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyByoS05nipwhqvtVKwNP1pl10dMyEpQPV0&callback=initMap">
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyByoS05nipwhqvtVKwNP1pl10dMyEpQPV0&libraries=geometry&callback=initMap">
     </script>
 </body>
 

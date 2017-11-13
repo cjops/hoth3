@@ -84,6 +84,11 @@
         padding: 6px 12px;
         margin-bottom: 13px;
       }
+      #results p {
+      	margin: 0 13px;
+      	font-size: 14px;
+      	width: 400px;
+      }
     </style>
   </head>
   <body>
@@ -101,6 +106,7 @@
         <input id="pac-input" type="text"
             placeholder="Enter a location">
         <p style="margin-left: 13px;"><button title="Find route" id="routeButton">Find route</button></p>
+        <div id="results"></div>
       </div>
     </div>
     <div id="map"></div>
@@ -128,6 +134,12 @@
         	unitSystem: google.maps.UnitSystem.IMPERIAL
         }, callback);
 
+        function displayResults(bestDistance, bestAddie) {
+        	bestDistanceTotal = bestDistance / 1609.344 * 2.0;
+        	bestAddie = bestAddie.substring(0, bestAddie.indexOf(','));
+        	document.getElementById("results").innerHTML = '<p>If you run to <b>' + bestAddie + '</b> and back, you will cover <b>' + bestDistanceTotal + '</b> miles!</p>';
+        }
+
         function callback(response, status) {
         	if (status !== 'OK') {
         		alert('Error was: ' + status);
@@ -147,6 +159,9 @@
         		}
         		console.log(closestMatch);
         		console.log(response);
+        		var bestDistance = response.rows[0].elements[closestMatch].distance.value;
+        		var bestAddie = response.destinationAddresses[closestMatch];
+        		displayResults(bestDistance, bestAddie);
         		//fn(response.destinationAddresses[closestMatch]);
         		fn(closestMatch);
         	}
@@ -280,6 +295,8 @@
 						console.log("HI" + origin);
 						console.log("HI" + address);
 
+						infowindow.close();
+						marker.setVisible(false);
 
 					directionsService.route({
 					          origin: origin,

@@ -89,9 +89,21 @@
       	font-size: 14px;
       	width: 400px;
       }
+      #meb {
+      	bottom: 30px;
+      	left: 5px;
+      	position: absolute;
+      	z-index: 9000;
+      	width: 200px;
+      	height: 216px;
+      }
     </style>
   </head>
   <body>
+  	<div id="meb">
+  		<img src="meb.jpg" width="200">
+  	</div>
+
     <div class="pac-card" id="pac-card">
       <div>
         <div id="title">
@@ -255,6 +267,27 @@
           infowindowContent.children['place-address'].textContent = address;
           infowindow.open(map, marker);
         });
+
+
+
+		google.maps.event.addListener(map, 'click', function(event) {
+          infowindow.close();
+          marker.setVisible(false);
+
+          console.log(event.latLng);
+  		  marker.setPosition(event.latLng);
+ 		  marker.setVisible(true);
+		  var geocode = new google.maps.Geocoder().geocode({
+				  location: event.latLng
+				}, function(response, status) {
+					if (status=='OK'&&response.length>0) {
+						console.log(response[0]);
+						document.getElementById('pac-input').value = response[0].formatted_address;
+					}
+		  });
+
+        });
+
 
 
 
